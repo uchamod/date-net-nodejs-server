@@ -51,7 +51,7 @@ const UserSchema = new mongoose.Schema(
 
     contact: {
       type: Number,
-      default:0,
+      default: 0,
       trim: true,
     },
     referenceUrl: {
@@ -59,7 +59,19 @@ const UserSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verifyCode: {
+      type: String,
+    },
+    codeExpireTime: {
+      type: Number,
+      default: 0,
+    },
   },
+
   {
     timestamps: true, //cratedAT and updatedAt
   }
