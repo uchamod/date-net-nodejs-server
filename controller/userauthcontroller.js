@@ -58,13 +58,16 @@ export const register = async (req, res) => {
     //send email
     await transporter.sendMail(mailReciver);
     return res.status(200).json({
+      succss: true,
       newToken,
       user: {
         id: createdUser._id,
       },
     });
   } catch (err) {
-    return res.status(404).json({ response: `${err}` });
+    return res
+      .status(500)
+      .json({ succss: false, massage: `Internal server error` });
   }
 };
 //verify account
@@ -111,6 +114,7 @@ export const verifyAccount = async (req, res) => {
     //send email
     await transporter.sendMail(mailReciver);
     return res.status(200).json({
+      success: true,
       user: {
         id: user._id,
         username: user.username,
@@ -131,21 +135,21 @@ export const login = async (req, res) => {
   if (!username || !password) {
     return res
       .status(400)
-      .json({ succss: false, massage: "enter all details" });
+      .json({ success: false, massage: "enter all details" });
   }
   try {
     const existUser = await User.findOne({ username });
     if (!existUser) {
       return res
         .status(400)
-        .json({ succss: false, massage: " user not found" });
+        .json({ success: false, massage: " user not found" });
     }
     //check password validation
     const isValidPassword = await bcrypt.compare(password, existUser.password);
     if (!isValidPassword) {
       return res
         .status(400)
-        .json({ succss: false, massage: "invalid password" });
+        .json({ success: false, massage: "invalid password" });
     }
     //gen new token
     const newToken = await jwt.sign(
@@ -154,7 +158,8 @@ export const login = async (req, res) => {
       { expiresIn: "7d" }
     );
     //response-succsuss
-    res.status(200).json({
+    return res.status(200).json({
+      success: true,
       newToken,
       user: {
         id: existUser._id,
@@ -164,23 +169,27 @@ export const login = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(404).json({ res: err });
+    return res
+      .status(500)
+      .json({ success: false, massage: "internal server error" });
   }
 };
 
 export const resetPasswordVerification = async (req, res) => {
-  const { email, password } = req.body;
+  const { email } = req.body;
 
-  if (!email || !password) {
+  if (!email) {
     return res
       .status(400)
-      .json({ succss: false, massage: "enter all details" });
+      .json({ success: false, massage: "enter all details" });
   }
 
   try {
     const existUser = await User.findOne({ email });
     if (!existUser) {
-      return res.status(404).json({ succss: false, massage: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, massage: "User not found" });
     }
 
     //verify code
@@ -202,38 +211,43 @@ export const resetPasswordVerification = async (req, res) => {
     //send email
     await transporter.sendMail(mailReciver);
     return res.status(200).json({
+      success: true,
       user: {
-        id: existUser._id,
+        id: email,
       },
     });
   } catch (err) {
-    return res.status(404).json({ res: err });
+    return res
+      .status(500)
+      .json({ success: true, massage: "internal server error" });
   }
 };
 
 export const resetPassword = async (req, res) => {
-  const { id, otp, password } = req.body;
+  const { email, otp, password } = req.body;
 
-  if (!id || !otp || !password) {
+  if (!email || !otp || !password) {
     return res
       .status(400)
-      .json({ succss: false, massage: "enter all details" });
+      .json({ success: false, massage: "enter all details" });
   }
 
   try {
-    const existUser = await User.findById(id);
+    const existUser = await User.findOne({ email });
     if (!existUser) {
-      return res.status(404).json({ succss: false, massage: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, massage: "User not found" });
     }
 
     if (otp == "" || otp != existUser.verifyCode) {
-      return res.status(400).json({ succsuss: false, massage: "Invalid OTP" });
+      return res.status(400).json({ success: false, massage: "Invalid OTP" });
     }
 
     if (existUser.codeExpireTime < Date.now()) {
       return res
         .status(408)
-        .json({ succsuss: false, massage: "Request Time out" });
+        .json({ success: false, massage: "Request Time out" });
     }
     //hash password
     const salt = await bcrypt.genSalt(10);
@@ -260,6 +274,8 @@ export const resetPassword = async (req, res) => {
       massage: "password reset succssfulty",
     });
   } catch (err) {
-    return res.status(404).json({ res: err });
+    return res
+      .status(500)
+      .json({ success: false, massage: "internal server error" });
   }
 };
