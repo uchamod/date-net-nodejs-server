@@ -75,7 +75,7 @@ export const verifyAccount = async (req, res) => {
   const { userId, verifyCode } = req.body;
 
   if (!userId || !verifyCode) {
-    return res.status(400).json({ success: false, message: "Missing Details" });
+    return res.status(400).json({ success: false, massage: "Missing Details" });
   }
 
   try {
@@ -84,17 +84,17 @@ export const verifyAccount = async (req, res) => {
     if (!user) {
       return res
         .status(400)
-        .json({ success: false, message: "User not found" });
+        .json({ success: false, massage: "User not found" });
     }
     //when invalid otp
     if (user.verifyCode == "" || user.verifyCode != verifyCode) {
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
+      return res.status(400).json({ success: false, massage: "Invalid OTP" });
     }
     //if otp expired
     if (user.codeExpireTime < Date.now()) {
       return res
         .status(408)
-        .json({ success: false, message: "Request time out" });
+        .json({ success: false, massage: "Request time out" });
     }
 
     //when all set
@@ -125,7 +125,7 @@ export const verifyAccount = async (req, res) => {
   } catch (err) {
     return res
       .status(500)
-      .json({ success: false, message: "Internal server error" });
+      .json({ success: false, massage: "Internal server error" });
   }
 };
 //user login
