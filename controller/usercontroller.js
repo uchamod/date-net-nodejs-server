@@ -6,7 +6,7 @@ export const getCurrentUser = async (req, res) => {
   if (!id) {
     return res
       .status(401)
-      .json({ succss: false, massage: "Invalid infomation" });
+      .json({ success: false, massage: "Invalid infomation" });
   }
   try {
     const existUser = await User.findById(id);
@@ -14,14 +14,14 @@ export const getCurrentUser = async (req, res) => {
       return res.status(404).json({ succss: false, massage: "user not found" });
     }
     return res.status(200).json({
-      succss: true,
+      success: true,
       massage: "data fetched succsussfuly",
       user: existUser,
     });
   } catch (err) {
     return res
       .status(500)
-      .json({ succss: false, massage: "Internal server error" });
+      .json({ success: false, massage: "Internal server error" });
   }
 };
 //get all user info : will update to all workers
@@ -30,7 +30,7 @@ export const getAllUser = async (req, res) => {
     const allUsers = await User.find({});
 
     return res.status(200).json({
-      succss: true,
+      success: true,
       massage: "data fetched succsussfuly",
       users: allUsers,
     });
@@ -38,25 +38,35 @@ export const getAllUser = async (req, res) => {
     console.log(`error from get all user ${err}`);
     return res
       .status(500)
-      .json({ succss: false, massage: "Internal server error" });
+      .json({ success: false, massage: "Internal server error" });
   }
 };
 //get user/s by username
 export const getUserByUserName = async (req, res) => {
-  const { username } = req.params.username;
+  const { username } = req.params;
   if (!username) {
-    return res.status(404).json({ succss: false, massage: "User Not Found" });
+    return res.status(400).json({ success: false, massage: "empty parameter" });
   }
   try {
-    const user = await User.find({ username });
+    // Create a case-insensitive regex pattern to find similar usernames
+    const regex = new RegExp(username, "i");
+    //get similer users by alphbatically sort and limited to 10
+    const user = await User.find({ username: { $regex: regex } })
+      .sort({ username: 1 })
+      .limit(10);
+    if (user === 0) {
+      return res
+        .status(404)
+        .json({ success: false, massage: "User not found" });
+    }
     return res.status(200).json({
-      succss: true,
+      success: true,
       massage: "data fetched succsussfuly",
       users: user,
     });
   } catch (err) {
     return res
       .status(500)
-      .json({ succss: false, massage: "Internal server error" });
+      .json({ success: false, massage: "Internal server error" });
   }
 };
