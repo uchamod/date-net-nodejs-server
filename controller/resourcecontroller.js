@@ -130,7 +130,7 @@ export const likeReels = async (req, res) => {
       reel.likes.push(userId);
     }
 
-    const updatedReel = await reel.save();
+    const updatedReel = await reel.save();``
     return res.status(200).json({
       success: true,
       data: {
